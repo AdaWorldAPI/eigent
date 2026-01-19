@@ -21,9 +21,8 @@ RUN apt-get update && apt-get install -y \
 # Copy dependency files first (better layer caching)
 COPY server/pyproject.toml server/uv.lock ./
 
-# Install Python dependencies
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-install-project --no-dev
+# Install Python dependencies (without cache mount for Railway compatibility)
+RUN uv sync --no-install-project --no-dev
 
 # Copy server code
 COPY server/ /app
@@ -32,8 +31,7 @@ COPY server/ /app
 COPY utils /app/utils
 
 # Final sync
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-dev
+RUN uv sync --no-dev
 
 # Compile i18n
 RUN uv run pybabel extract -F babel.cfg -o messages.pot . 2>/dev/null || true && \
